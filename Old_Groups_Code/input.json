@@ -1,7 +1,8 @@
 {
 	"img_dir" : "./H_Spray/150bar/T2",
 	"refresh" : "linux",
-	"normalize" : "1",
+	"normalize" : 1,
+	"removeBackground" : 0,
 	"norm_imgs" : [1,399],
 	"normalized_img_dir" : "./norm_imgs/",
 	"nframes" : 6,

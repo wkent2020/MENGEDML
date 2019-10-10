@@ -17,6 +17,7 @@ refresh = "linux"     #if this value is 'linux or 'windows,' for the os in use,
 # normalization paramters
 # -----------------------------------------
 normal = 1            #do we need to normalize the images? 1 for yes, 0 for no
+removeBackground = 0  #do we need to remove background? 1 for yes, 0 for no
 n_imgs = [1,399]      #which images in the directory, dir_name, 
                         #need to be normalized
 ndir  = "./norm_imgs/"#name of directory where normalized images will be saved
@@ -91,7 +92,8 @@ num_files = len(os.listdir("./" + dir_name))
 with open("input.json",'w') as l:
   l.write('{\n\t"img_dir" : "' + dir_name + '",\n')
   l.write('\t"refresh" : "' + refresh + '",\n')
-  l.write('\t"normalize" : "' + str(normal) + '",\n')
+  l.write('\t"normalize" : ' + str(normal) + ',\n')
+  l.write('\t"removeBackground" : ' + str(removeBackground) + ',\n')
   l.write('\t"norm_imgs" : [' + str(n_imgs[0]) + ',' + str(n_imgs[1]) +'],\n')
   l.write('\t"normalized_img_dir" : "' + ndir + '",\n')
   l.write('\t"nframes" : ' + str(n_frames) + ',\n')

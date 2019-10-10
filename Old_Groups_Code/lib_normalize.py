@@ -52,7 +52,7 @@ def normalize():
   #then calculate the overall max/min pixel values.
   #These max/min values must be consistent across all sets of images we want to analyze!
   #Need to keep this in mind when normalizing multiple directories
-  imgs_nobg = []
+  imgs_norm = []
   max_pixel = -1
   min_pixel = np.inf
 
@@ -76,21 +76,26 @@ def normalize():
         img = img[:,:-data["cut_right"]]
       if data["cut_left"]:
         img = img[:,data["cut_left"]:]
-      img_nobg = img-bg
-
-      #subtract background to bring background to 1
-      second_bg = np.mean(np.mean(img_nobg[data["bkgd_section"][0]:data["bkgd_section"][1], \
-                        data["bkgd_section"][2]:data["bkgd_section"][3]]))
-      img_nobg = img_nobg-second_bg
-
-      img_max = img_nobg.max()
-      img_min = img_nobg.min()
+      
+      
+      if data["removeBackground"]:
+        img_nobg = img-bg
+        #subtract background to bring background to 1
+        second_bg = np.mean(np.mean(img_nobg[data["bkgd_section"][0]:data["bkgd_section"][1], \
+                          data["bkgd_section"][2]:data["bkgd_section"][3]]))
+        img_norm = img_nobg-second_bg
+      else: 
+        img_norm = img
+      
+      img_max = img_norm.max()
+      img_min = img_norm.min()
+      
       if img_max>max_pixel:
           max_pixel = img_max
       if img_min<min_pixel:
           min_pixel = img_min
 
-      imgs_nobg.append(img_nobg)
+      imgs_norm.append(img_norm)
 
   #now rescale each image to 8-bit range
   #pixel values will still be stored as floats
@@ -98,7 +103,7 @@ def normalize():
 
   print("Rescaling images...")
 
-  for img in imgs_nobg:
+  for img in imgs_norm:
       img_rescaled = 255*((img-min_pixel)/(max_pixel-min_pixel))
       imgs_rescaled.append(img_rescaled.astype('uint8'))
 
