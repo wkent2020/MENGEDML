@@ -12,7 +12,7 @@ import os
 
 
 direct = "Old_Groups_Code/norm_imgs/"
-file = "154.tif"
+file = "300.tif"
 img = cv2.imread(direct + file,-1)
 img_max = img.max()
 img_min = img.min()
@@ -141,7 +141,7 @@ def multiThresholding(image, kthresh):
 	Z = image.reshape((-1,1))
 	Z = np.float32(Z)
 	criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0) #directly copied from opencv documentation
-	ret,label,center=cv2.kmeans(Z,kthresh,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+	ret,label,center = cv2.kmeans(Z,kthresh,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
 	print(center)
 	# Now convert back into uint8, and make original image
 	center = np.uint8(center)
@@ -154,7 +154,9 @@ def multiThresholding(image, kthresh):
 	print("kmeans multithreshold value of "+str(thresh_val))            
 	#now threshold the k-means clustered image to only keep the darkest cluster
 	ret,proc = cv2.threshold(kthreshed,thresh_val,255,cv2.THRESH_BINARY) #binarizes
+    # Binary image file
 	print(proc)
+    # Threshold value
 	print(ret)
 	#plt.imshow(proc,cmap = 'gray')
 	#plt.show()
