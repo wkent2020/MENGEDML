@@ -10,13 +10,17 @@ import os
 #cv2.imwrite("./norm_imgs/"+num+".png",img_rescaled)
 
 
-direct = 'Normalized_BackgroundRemoved/'
-file = "350.tif"
+direct = "Old_Groups_Code/norm_imgs/"
+file = "154.tif"
 img = cv2.imread(direct + file,-1)
 img_max = img.max()
 img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
 img_rescaled = np.array(img_rescaled, dtype = int)
+
+plt.close('all')
+#plt.imshow(img, cmap='gray')
+#print(img)
 
 def windowFrame(image, rows, columns, save = True):
 	frames = []
@@ -159,13 +163,13 @@ def multiThresholding(image, kthresh):
 		Draw contours onto images
 		'''
 		contours, hierarchy = cv2.findContours(image_binarized, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		shapes_image = np.copy(image_binarized)
+		shapes_image = np.copy(image)
 
 		#change back to RGB for easier visualization
 		shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
-		plt.imshow(shapes_image) # uncomment these lines to plot in real time
-		plt.show()
-		shapes_image = cv2.drawContours(image, contours, -1, (0,0,255), 1)
+#		plt.imshow(shapes_image) # uncomment these lines to plot in real time
+#		plt.show()
+		shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
 		plt.imshow(shapes_image) 
 		plt.show()
 	drawShapes(proc, img)
