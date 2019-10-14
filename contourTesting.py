@@ -144,8 +144,11 @@ def multiThresholding(image, kthresh):
 	print(center)
 	# Now convert back into uint8, and make original image
 	center = np.uint8(center)
+    # Puts something into single array
 	res = center[label.flatten()]
+    # Takes 1-D array and puts back into image format
 	kthreshed = res.reshape((image.shape))
+    # Lowest grayscale k-means center: aka some color
 	thresh_val = min(center)[0]
 	print("kmeans multithreshold value of "+str(thresh_val))            
 	#now threshold the k-means clustered image to only keep the darkest cluster
