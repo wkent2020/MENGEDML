@@ -62,6 +62,13 @@ def canny(img):
 	plt.show()
 	return edges
 
+def cannyClosing(img, kernelSize):
+	edges = cv2.Canny(img, 100, 200)
+	kernel = np.ones((kernelSize,kernelSize),np.uint8)
+	closing = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+	drawShapes(closing, img)
+	return closing
+
 def bilateralFilter(img):
 	blur = cv2.bilateralFilter(img,9,75,75)
 	plt.subplot(121),plt.imshow(img,cmap = 'gray')
