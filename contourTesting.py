@@ -136,6 +136,21 @@ def laplace_sobel(img):
 #for i in range(len(frames)):
 #	histogram(frames[i], show = False, save = 'frame' + str(i))
 
+def drawShapes(image_binarized, image):
+	'''
+	Draw contours onto images
+	'''
+	contours, hierarchy = cv2.findContours(image_binarized, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	shapes_image = np.copy(image)
+
+	#change back to RGB for easier visualization
+	shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
+#	plt.imshow(shapes_image) # uncomment these lines to plot in real time
+#	plt.show()
+	shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
+	plt.imshow(shapes_image) 
+	plt.show()
+
 def multiThresholding(image, kthresh):
 
 	Z = image.reshape((-1,1))
@@ -159,20 +174,7 @@ def multiThresholding(image, kthresh):
 	#plt.show()
 	#canny(proc)
 
-	def drawShapes(image_binarized, image):
-		'''
-		Draw contours onto images
-		'''
-		contours, hierarchy = cv2.findContours(image_binarized, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		shapes_image = np.copy(image)
-
-		#change back to RGB for easier visualization
-		shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
-#		plt.imshow(shapes_image) # uncomment these lines to plot in real time
-#		plt.show()
-		shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
-		plt.imshow(shapes_image) 
-		plt.show()
+	
 	drawShapes(proc, img)
 
 	"""
