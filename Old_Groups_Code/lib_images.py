@@ -134,7 +134,7 @@ class Image(object):
         From binary images, find shapes which fit parameters assigned in json
         '''
         #find shapes in processed (binary) image
-        hierarchy, contours = cv2.findContours(self.processed_image, cv2.RETR_TREE,\
+        contours, hierarchy = cv2.findContours(self.processed_image, cv2.RETR_TREE,\
 cv2.CHAIN_APPROX_SIMPLE)
         self.shapes = [Shape(contour) for contour in contours]
         #apply parameters assigned in json
