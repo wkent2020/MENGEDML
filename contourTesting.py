@@ -158,12 +158,32 @@ def drawShapes(image_binarized, image):
 	plt.imshow(shapes_image) 
 	plt.show()
 
-def multiThresholding(image, kthresh):
+def kMeansHistogram(Z, label, kthresh, show = True, save = ''):
+	'''
+	Takes data for 1 dimensional kmeans and the resultant labels 
+	and plots histogram of clusters
+	'''
+	fig, axs = plt.subplots(1, 1)
+	for k in range(kthresh):
+		cluster = Z[label == k]
+		bins = 1+int(cluster.max() - cluster.min())
+		axs.hist(cluster, bins, label = str(k))
+	axs.legend()
+	if show:
+		plt.show()
+	if len(save) != 0:
+		os.system('mkdir savedHistograms')
+		plt.savefig('savedHistograms/' + save)
+		plt.close()
+
+def multiThresholding(image, kthresh, kthcenter = 0, plotHistogram = False):
 
 	Z = image.reshape((-1,1))
 	Z = np.float32(Z)
 	criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0) #directly copied from opencv documentation
 	ret,label,center = cv2.kmeans(Z,kthresh,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+	if plotHistogram:
+		kMeansHistogram(Z, label, kthresh)
 	print(center)
 	# Now convert back into uint8, and make original image
 	center = np.uint8(center)
@@ -172,7 +192,10 @@ def multiThresholding(image, kthresh):
     # Takes 1-D array and puts back into image format
 	kthreshed = res.reshape((image.shape))
     # Lowest grayscale k-means center: aka some color
-	thresh_val = min(center)[0]
+	if(kthcenter == 0):
+		thresh_val = min(center)[0]
+	else:
+		thresh_val = np.sort(np.concatenate(center))[kthcenter]
 	print("kmeans multithreshold value of "+str(thresh_val))            
 	#now threshold the k-means clustered image to only keep the darkest cluster
 	ret,proc = cv2.threshold(kthreshed,thresh_val,255,cv2.THRESH_BINARY) #binarizes
