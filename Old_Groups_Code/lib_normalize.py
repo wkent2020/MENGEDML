@@ -102,11 +102,22 @@ def normalize():
   imgs_rescaled = []
 
   print("Rescaling images...")
+  if data["eightBit"]:
 
-  for img in imgs_norm:
-      img_rescaled = 255*((img-min_pixel)/(max_pixel-min_pixel))
-      imgs_rescaled.append(img_rescaled.astype('uint8'))
 
-  #write images -- this will automatically convert all values to uint8
-  for i in range(len(imgs_rescaled)):
+    for img in imgs_norm:
+        img_rescaled = 255*((img-min_pixel)/(max_pixel-min_pixel))
+        imgs_rescaled.append(img_rescaled.astype('uint8'))
+
+    #write images -- this will automatically convert all values to uint8
+    for i in range(len(imgs_rescaled)):
+        cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])
+  else:
+    #Convert back to 16-bit after the background removal
+    #Does nothing if the background is not removed
+    for img in imgs_norm:
+        img_rescaled = (2**16)*((img-min_pixel)/(max_pixel-min_pixel))
+        imgs_rescaled.append(img_rescaled.astype('uint16'))
+
+    for i in range(len(imgs_rescaled)):
       cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])

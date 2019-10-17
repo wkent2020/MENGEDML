@@ -97,6 +97,9 @@ class Image(object):
         '''
         with open('input.json') as f:
             data = json.load(f)
+        if not(data["eightBit"]):
+          #Send image to float32 so that openCV plays nicely
+          self.image = (np.float32(1.0)*self.image/(2**16-1)).astype('float32')
         #smooth the image with a bilateral filter
         blur = cv2.bilateralFilter(self.image,9,150,150)
         #turn everything below (limit) to black
@@ -109,7 +112,8 @@ class Image(object):
             criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
             ret,label,center=cv2.kmeans(Z,data["kthresh"],None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
             # Now convert back into uint8, and make original image
-            center = np.uint8(center)
+            if data['eightBit']:
+              center = np.uint8(center)
             self.center = center
             res = center[label.flatten()]
             self.kthreshed = res.reshape((self.image.shape))
@@ -121,7 +125,20 @@ class Image(object):
             ret,proc = cv2.threshold(blur,data["pixel_threshold"],255,cv2.THRESH_TOZERO)
             #turn everything above (limit) to white
             ret,proc = cv2.threshold(proc,data["pixel_threshold"],255,cv2.THRESH_TRUNC)
-            ret,proc = cv2.threshold(self.image,data["pixel_threshold"]-10,255,cv2.THRESH_BINARY)
+            if data['eightBit']:
+              ret,proc = cv2.threshold(self.image,data["pixel_threshold"]-10,255,cv2.THRESH_BINARY)
+            else:
+              # this adjustment by 10 is pretty problematic
+              ret,proc = cv2.threshold(self.image,data["pixel_threshold"]-10/255,255,cv2.THRESH_BINARY)
+            
+            #highlight the edges with Canny edge detection
+            #proc = cv2.Canny(self.image,100,200)
+
+        if not(data["eightBit"]):
+          # threshold function outputs binary float image with values 0. and 255. 
+          proc = np.uint8(proc)
+          # return image to 16-bit
+          self.image = (2**16*self.image).astype('uint16')
         self.binary = proc
         #highlight the edges with Canny edge detection
         self.processed_image = cv2.Canny(proc,100,200)
@@ -163,9 +180,10 @@ cv2.CHAIN_APPROX_SIMPLE)
         #plt.imshow(self.shapes_image) # uncomment these lines to plot in real time
         #plt.show()
 
-    def splitShapes(self,shapedir):
+    def splitShapes(self, shapedir, eightBit):
         '''
-        Save all shapes as individual images into a single directory
+        Save all shapes as individual images into a single directory 'shapedir'
+        Saves shapes differently based on Boolean 'eightBit'
         '''
         #crop each shape
         shapes_split = [bshape.crop(self.image) for bshape in self.big_shapes]
@@ -175,7 +193,10 @@ cv2.CHAIN_APPROX_SIMPLE)
             name = self.location[self.front_index:-4] + "_" + \
                     str(len(self.big_shapes))+ "_" + str(idx)
             #print(name)
-            write(shape,shapedir+name+".jpg")
+            if eightBit:
+              write(shape,shapedir+name+".jpg")
+            else:
+              cv2.imwrite(shapedir+name+".tif", shape)
 
     def writeLabels(self,target):
         '''

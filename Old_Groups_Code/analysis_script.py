@@ -102,6 +102,8 @@ if data["kthresh"] != 0:
     #thresh_val = (center1 + center2)/2
     thresh_val = center2
     #print(thresh_val)
+    if not(data["eightBit"]):
+      thresh_val = float(thresh_val)
     data["pixel_threshold"] = thresh_val
     data["kthresh"] = 0         
     with open('input.json','w') as f:
@@ -127,7 +129,7 @@ for loc in img_locs:
     img = Image(loc)
     all_imgs.append(img)
     all_shapes = np.concatenate((all_shapes,img.big_shapes))
-    img.splitShapes(shape_dir)
+    img.splitShapes(shape_dir, data["eightBit"])
 # ----------------------------------------------------------------------------
 
 
