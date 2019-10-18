@@ -3,6 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
+	"Crop pixels off the image"
+	cropped_image = np.copy(image)
+	return cropped_image[cropTop:-cropBottom,cropLeft:-cropRight]
+
 def windowFrame(image, rows, columns, save = True, file='none'):
 	frames = []
 	lenRows, lenColumns = image.shape
