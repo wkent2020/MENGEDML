@@ -2,145 +2,24 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from thresholdingFunctions import *
 
-direct = 'Normalized_BackgroundRemoved/'
-file = "121.tif"
+direct = 'Old_Groups_Code/norm_imgs/'
+file = "120.tif"
 img = cv2.imread(direct + file,-1)
 img_max = img.max()
 img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
 img_rescaled = np.array(img_rescaled, dtype = int)
 
-def windowFrame(image, rows, columns, save = True):
-	frames = []
-	lenRows, lenColumns = image.shape
-	for i in range(rows):
-		for j in range(columns):
-			picture = image[int(lenRows / rows) * i: int(lenRows / rows) * (i+1), int(lenColumns / columns) * j: int(lenColumns / columns) * (j+1)]
-			frames.append(picture)
-	if save:
-		os.system('mkdir windowFrames_'+file[0:-4])
-		for i in range(len(frames)):
-			cv2.imwrite('windowFrames_' +file[0:-4] + "/frame"+str(i)+".tif",frames[i])
-	return frames
 
-def histogram(image, show = True, save = ''):
-	Z = np.concatenate(np.float32(image.reshape((-1,1))))
-	img_max = image.max()
-	img_min = image.min()
-	bins = img_max - img_min
-	fig, axs = plt.subplots(1, 1)
-	axs.hist(Z, bins)
-	#axs.set_xlim(0,255)
-	if show:
-		plt.show()
-	if len(save) != 0:
-		os.system('mkdir savedHistograms')
-		plt.savefig('savedHistograms/' + save)
-		plt.close()
-
-def canny(img, plot = False):
-	edges = cv2.Canny(img,100,40)
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(edges,cmap = 'gray')
-		plt.title('Canny Edges'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return edges
-
-def bilateralFilter(img, plot = False):
-	blur = cv2.bilateralFilter(img,9,75,75)
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(blur,cmap = 'gray')
-		plt.title('Bilateral Filtered'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return blur
-
-def medianFilter(img, plot = False):
-	median = cv2.medianBlur(img,5)
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(median,cmap = 'gray')
-		plt.title('Median Filtered'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return median
-
-def gaussianFilter(img, plot = False):
-	blur = cv2.GaussianBlur(img,(5,5),0)
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(blur,cmap = 'gray')
-		plt.title('Gaussian Filtered'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return blur
-
-def averageBlur(img, plot = False):
-	blur = cv2.blur(img, (5,5))
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(blur,cmap = 'gray')
-		plt.title('Blurred Image'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return blur
-
-#blur = gaussianFilter(img)
-#histogram(blur)
-
-def histogramEqualization(img):
-	equ = cv2.equalizeHist(img)
-	return equ
-
-def adaptiveHistogram(img, plot = False):
-	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-	cl1 = clahe.apply(img)
-	if plot:
-		plt.subplot(121),plt.imshow(img,cmap = 'gray')
-		plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-		plt.subplot(122),plt.imshow(cl1,cmap = 'gray')
-		plt.title('Adaptive Histogram'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return cl1
-
-def laplace(img, plot = False):
-	laplacian = cv2.Laplacian(img,cv2.CV_64F)
-	if plot:
-		plt.subplot(2,2,1),plt.imshow(img,cmap = 'gray')
-		plt.title('Original'), plt.xticks([]), plt.yticks([])
-		plt.subplot(2,2,2),plt.imshow(laplacian,cmap = 'gray')
-		plt.title('Laplacian'), plt.xticks([]), plt.yticks([])
-		plt.show()
-	return laplacian
-
-def sobelx(img, plot = False):
-	sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5)
-	if plot:
-		plt.subplot(2,2,1),plt.imshow(img,cmap = 'gray')
-		plt.title('Original'), plt.xticks([]), plt.yticks([])
-		plt.subplot(2,2,2),plt.imshow(sobelx,cmap = 'gray')
-		plt.title('Sobel X'), plt.xticks([]), plt.yticks([])
-	return sobelx
-
-def sobely(img, plot = False):
-	sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5)
-	if plot:
-		plt.subplot(2,2,1),plt.imshow(img,cmap = 'gray')
-		plt.title('Original'), plt.xticks([]), plt.yticks([])
-		plt.subplot(2,2,2),plt.imshow(sobely,cmap = 'gray')
-		plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
-	return sobely
 
 def multiThresholding(image, kthresh, pixelThresh = False):
 	Z = image.reshape((-1,1))
 	Z = np.float32(Z)
 	criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0) #directly copied from opencv documentation
 	ret,label,center=cv2.kmeans(Z,kthresh,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS) #sum of squared errors, labels, greyscale centers
-	print(center.flatten())
+#	print(center.flatten())
 	#print(ret)
 	# Now convert back into uint8, and make original image
 	center = np.uint8(center)
@@ -159,23 +38,18 @@ def multiThresholding(image, kthresh, pixelThresh = False):
 		ret, proc = cv2.threshold(kthreshed,thresh_val,255,cv2.THRESH_BINARY) #greyscale threshold, binary image
 
 	frame_contours = []	
-	def drawShapes(image_binarized, image):
-		'''
-		Draw contours onto images
-		'''
-		contours, hierarchy = cv2.findContours(image_binarized, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		shapes_image = np.copy(image)
-		#change back to RGB for easier visualization
-		shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
-		shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
-		return shapes_image
 
 	contourImage = drawShapes(proc, image)
 	return proc, contourImage
 
 
-def segmentedThresholding(img, rows, columns, kthresh, filter = None, save = True, pixelThresh = False):
-	frames = windowFrame(img, rows, columns, save)
+def segmentedThresholding(img, rows, columns, kthresh, filter = None, save = False, pixelThresh = False, frame2 = False, rmdiv=0, cmdiv=0):
+
+	if frame2:
+		frames = windowFrame2(img, rows, columns, rmdiv, cmdiv, save, file)
+	else:
+		frames = windowFrame(img, rows, columns, save, file)
+	
 	frames_contours = []
 	for i in range(len(frames)):
 		filteredFrame = frames[i]
@@ -192,34 +66,82 @@ def segmentedThresholding(img, rows, columns, kthresh, filter = None, save = Tru
 			cv2.imwrite('frameContours_' +file[0:-4] + "/frame"+str(i)+".tif",frames_contours[i])
 	
 	#recombines segmented binary files into single binary image
+	if frame2:
+		i = 0
+		while i < (len(frames_contours)):
+			for j in range(columns+cmdiv-1):
+				print((i,j))
+				if j == 0:
+					buildingRow = frames_contours[i]
+					continue
+				if (j+1) <= (columns+cmdiv):
+					buildingRow = np.hstack((buildingRow, frames_contours[i+j]))
+	
+			if i ==0:
+				buildingColumn = buildingRow.copy()
+			else:
+				buildingColumn = np.vstack((buildingColumn, buildingRow))
+	
+			i += (columns+cmdiv-1)
+	else:
+		i = 0
+		while i < (len(frames_contours)):
+			for j in range(columns):
+				if j == 0:
+					buildingRow = frames_contours[i]
+					continue
+				if (j+1) <= columns:
+					buildingRow = np.hstack((buildingRow, frames_contours[i+j]))
+	
+			if i ==0:
+				buildingColumn = buildingRow.copy()
+			else:
+				buildingColumn = np.vstack((buildingColumn, buildingRow))
+	
+			i += columns
+
+	allContours = drawShapes(buildingColumn, img)
+	return buildingColumn, allContours
+
+def segmentedThresholding3(img, rows, columns, kthresh, filter = None, save = False, pixelThresh = False, frame2 = False, factor = 1):
+
+	frames = windowFrame3(img, rows, columns, factor, save, file)
+
+	
+	frames_contours = []
+	for i in range(len(frames)):
+		filteredFrame = frames[i]
+		if filter != None:
+			for fil in filter:
+				filteredFrame = fil(filteredFrame)
+		frame_shapes, contourImage = multiThresholding(filteredFrame, kthresh, pixelThresh = pixelThresh)
+		frames_contours.append(frame_shapes)
+		#histogram(framesi[], show = False, save = 'frame' + str(i))
+	
+	if save:
+		os.system('mkdir frameContours_'+file[0:-4])
+		for i in range(len(frames_contours)):
+			cv2.imwrite('frameContours_' +file[0:-4] + "/frame"+str(i)+".tif",frames_contours[i])
+	
+	#recombines segmented binary files into single binary image
+
 	i = 0
 	while i < (len(frames_contours)):
 		for j in range(columns):
 			if j == 0:
 				buildingRow = frames_contours[i]
 				continue
-			if (j+1) <= columns:
+			if j <= columns:
 				buildingRow = np.hstack((buildingRow, frames_contours[i+j]))
+#			print("Column %i" % j)
+#			print("Row %i" % i)
 
 		if i ==0:
 			buildingColumn = buildingRow.copy()
 		else:
 			buildingColumn = np.vstack((buildingColumn, buildingRow))
-
-		i += columns
-
-	
-	def drawShapes(image_binarized, image):
-		'''
-		Draw contours onto images
-		'''
-		contours, hierarchy = cv2.findContours(image_binarized, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		shapes_image = np.copy(image)
-	
-		#change back to RGB for easier visualization
-		shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
-		shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
-		return shapes_image
+#		print(i)
+		i += (columns)
 
 	allContours = drawShapes(buildingColumn, img)
 	return buildingColumn, allContours
@@ -238,8 +160,38 @@ Arguments:
 Returns binary image, image with contours
 """
 
-binaryImage, contourImage = segmentedThresholding(img, 5, 5, 3, filter = None, pixelThresh = False)
+cols = 3
+fac = 0.3
+k = 3
+binaryImage, contourImage = segmentedThresholding3(img, 1, cols, k, filter = None, pixelThresh = False,save=False,frame2 = True, factor=fac)
+binaryImage2, contourImage2 = segmentedThresholding(img, 1, cols, k, filter = None, pixelThresh = False,save=False)
+binaryImage3, contourImage3 = multiThresholding(img, k)
+binaryImage2, contourImage2 = segmentedThresholding3(img, 1, cols, 2, filter = None, pixelThresh = False,save=False,frame2 = True, factor=fac)
+binaryImage22, contourImage22 = segmentedThresholding(img, 1, cols, 2, filter = None, pixelThresh = False,save=False)
+binaryImage32, contourImage32 = multiThresholding(img, 2)
+
+plt.close('all')
+plt.figure(num=None, figsize=(11, 7), dpi=100, facecolor='w', edgecolor='k')
+plt.subplot(2,3,1)
+plt.imshow(contourImage32)
+plt.title(r"$k=2$ Uniform")
+plt.subplot(2,3,3)
+plt.imshow(contourImage2)
+plt.title("$k=2$ Segmented: %i Varied Columns" % int(cols))
+plt.subplot(2,3,2)
+plt.imshow(contourImage22)
+plt.title("$k=2$ Segmented: 3 Even Columns" )
+plt.subplot(2,3,4)
+plt.imshow(contourImage3)
+plt.title(r"$k=3$ Uniform")
+plt.subplot(2,3,6)
 plt.imshow(contourImage)
+plt.title("$k=3$ Segmented: %i Varied Columns" % int(cols))
+plt.subplot(2,3,5)
+plt.imshow(contourImage2)
+plt.title("$k=3$ Segmented: 3 Even Columns" )
+plt.tight_layout()
 plt.show()
+plt.savefig("OPfigs/k3_multi.png", dpi=300)
 
 
