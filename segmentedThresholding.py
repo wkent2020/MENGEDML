@@ -7,6 +7,8 @@ from thresholdingFunctions import *
 direct = 'Old_Groups_Code/norm_imgs/'
 file = "120.tif"
 img = cv2.imread(direct + file,-1)
+cropTop = 0
+img = cv2.imread(direct + file,-1)[cropTop:]
 img_max = img.max()
 img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
