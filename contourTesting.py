@@ -13,9 +13,8 @@ import os
 
 direct = "Old_Groups_Code/norm_imgs/"
 file = "300.tif"
-# Crop the top cropTop pixels off the top of the image
-cropTop = 40
-img = cv2.imread(direct + file,-1)[cropTop:]
+img = cv2.imread(direct + file,-1)
+img = cropImage(img)
 img_max = img.max()
 img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
@@ -24,6 +23,11 @@ img_rescaled = np.array(img_rescaled, dtype = int)
 plt.close('all')
 #plt.imshow(img, cmap='gray')
 #print(img)
+
+def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
+	"Crop pixels off the image"
+	cropped_image = np.copy(image)
+	return cropped_image[cropTop:-cropBottom,cropLeft:-cropRight]
 
 def windowFrame(image, rows, columns, save = True):
 	frames = []
