@@ -27,7 +27,12 @@ plt.close('all')
 def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
 	"Crop pixels off the image"
 	cropped_image = np.copy(image)
-	return cropped_image[cropTop:-cropBottom,cropLeft:-cropRight]
+	cropped_image = cropped_image[cropTop:,cropLeft:]
+	if cropBottom:
+		cropped_image = cropped_image[:-cropBottom,]
+	if cropRight:
+		cropped_image = cropped_image[:,-cropRight]
+	return cropped_image
 
 def windowFrame(image, rows, columns, save = True):
 	frames = []
