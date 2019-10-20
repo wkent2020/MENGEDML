@@ -276,6 +276,22 @@ def sobely(img, plot = False):
 		plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
 	return sobely
 
+def adaptiveThresholding(image, thresholdType = 1, blockSize = 11, subtract = 2):
+	'''
+	Applies adaptive thresholding to image with either mean or Gaussian thresholding
+	thresholdType of true gives adaptive mean thresholding and false gives adaptive Gaussian thresholding
+	blockSize sets the size of the neighborhood, and subtract reduces the threshold by the given amount
+	'''
+	if thresholdType:
+		thresh = cv2.ADAPTIVE_THRESH_MEAN_C
+	else:
+		thresh = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+
+	proc = cv2.adaptiveThreshold(image, 255, thresh, \
+		cv2.THRESH_BINARY, blockSize, subtract)
+
+	return proc
+
 def drawShapes(image_binarized, image):
 	'''
 	Draw contours onto images

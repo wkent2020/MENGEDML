@@ -10,6 +10,15 @@ import os
 #img_rescaled = cv2.imread(direct + file, -1) #reads 16 bit without translating to 8 bit, if original file is in 16 bit
 #cv2.imwrite("./norm_imgs/"+num+".png",img_rescaled)
 
+def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
+	"Crop pixels off the image"
+	cropped_image = np.copy(image)
+	cropped_image = cropped_image[cropTop:,cropLeft:]
+	if cropBottom:
+		cropped_image = cropped_image[:-cropBottom,]
+	if cropRight:
+		cropped_image = cropped_image[:,-cropRight]
+	return cropped_image
 
 direct = "Old_Groups_Code/norm_imgs/"
 file = "300.tif"
@@ -24,15 +33,6 @@ plt.close('all')
 #plt.imshow(img, cmap='gray')
 #print(img)
 
-def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
-	"Crop pixels off the image"
-	cropped_image = np.copy(image)
-	cropped_image = cropped_image[cropTop:,cropLeft:]
-	if cropBottom:
-		cropped_image = cropped_image[:-cropBottom,]
-	if cropRight:
-		cropped_image = cropped_image[:,-cropRight]
-	return cropped_image
 
 def windowFrame(image, rows, columns, save = True):
 	frames = []
@@ -186,6 +186,22 @@ def kMeansHistogram(Z, label, kthresh, show = True, save = ''):
 		os.system('mkdir savedHistograms')
 		plt.savefig('savedHistograms/' + save)
 		plt.close()
+
+def adaptiveThresholding(image, thresholdType = 1, blockSize = 11, subtract = 2):
+	'''
+	Applies adaptive thresholding to image with either mean or Gaussian thresholding
+	thresholdType of true gives adaptive mean thresholding and false gives adaptive Gaussian thresholding
+	blockSize sets the size of the neighborhood, and subtract reduces the threshold by the given amount
+	'''
+	if thresholdType:
+		thresh = cv2.ADAPTIVE_THRESH_MEAN_C
+	else:
+		thresh = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+
+	proc = cv2.adaptiveThreshold(image, 255, thresh, \
+		cv2.THRESH_BINARY, blockSize, subtract)
+	
+	drawShapes(proc, img)
 
 def multiThresholding(image, kthresh, kthcenter = 0, plotHistogram = False):
 
