@@ -10,12 +10,20 @@ import os
 #img_rescaled = cv2.imread(direct + file, -1) #reads 16 bit without translating to 8 bit, if original file is in 16 bit
 #cv2.imwrite("./norm_imgs/"+num+".png",img_rescaled)
 
+def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
+	"Crop pixels off the image"
+	cropped_image = np.copy(image)
+	cropped_image = cropped_image[cropTop:,cropLeft:]
+	if cropBottom:
+		cropped_image = cropped_image[:-cropBottom,]
+	if cropRight:
+		cropped_image = cropped_image[:,-cropRight]
+	return cropped_image
 
 direct = "Old_Groups_Code/norm_imgs/"
 file = "300.tif"
-# Crop the top cropTop pixels off the top of the image
-cropTop = 40
-img = cv2.imread(direct + file,-1)[cropTop:]
+img = cv2.imread(direct + file,-1)
+img = cropImage(img)
 img_max = img.max()
 img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
@@ -24,6 +32,7 @@ img_rescaled = np.array(img_rescaled, dtype = int)
 plt.close('all')
 #plt.imshow(img, cmap='gray')
 #print(img)
+
 
 def windowFrame(image, rows, columns, save = True):
 	frames = []
@@ -145,6 +154,53 @@ def laplace_sobel(img):
 #for i in range(len(frames)):
 #	histogram(frames[i], show = False, save = 'frame' + str(i))
 
+def contourArea(contours, image = None):
+    #Return array of contour areas
+    return np.array([cv2.contourArea(contour) for contour in contours])
+
+def contourBoundary(contour):
+	'''
+	Save location of the shape in the context of the larger image
+	'''
+
+	x,y,w,h = cv2.boundingRect(contour)
+	return np.array([y,y+h,x,x+w])
+
+def cropContour(contour, image, border = 0):
+	'''
+	Crop shape from rest of image
+	'''
+
+	boundary = contourBoundary(contour) 
+	# create a single channel pixel white image
+	canvas = np.zeros(image.shape).astype(image.dtype) + 255
+	fill = cv2.fillPoly(canvas, pts =[contour], color=0)
+	#keep shape in grayscale, turn background white
+	anti_fill = cv2.bitwise_or(image,fill)
+	croppedContour = anti_fill[boundary[0]:boundary[1],\
+					boundary[2]:boundary[3]]
+	#also crop to slightly larger than boundary so shape isn't right at 
+	#the edge of the image
+	#this will be useful if we want to draw more contours on a shape after cropping it
+	if border:
+		borderedContour = anti_fill[boundary[0]-border:boundary[1]+border,\
+					boundary[2]-border:boundary[3]+border]
+		return borderedContour
+	return croppedContour
+
+
+def meanIntensity(contours, image):
+    #Return mean intensity for each contour
+
+	meanIntensities = []
+	for contour in contours:
+		croppedContour = cropContour(contour, image)
+		mask = np.logical_not(np.logical_not(croppedContour -255)).astype('uint8')
+		meanIntensities.append(cv2.mean(croppedContour, mask= mask)[0])
+    
+	return np.array(meanIntensities)
+
+
 def drawShapes(image_binarized, image):
 	'''
 	Draw contours onto images
@@ -177,6 +233,22 @@ def kMeansHistogram(Z, label, kthresh, show = True, save = ''):
 		os.system('mkdir savedHistograms')
 		plt.savefig('savedHistograms/' + save)
 		plt.close()
+
+def adaptiveThresholding(image, thresholdType = 1, blockSize = 11, subtract = 2):
+	'''
+	Applies adaptive thresholding to image with either mean or Gaussian thresholding
+	thresholdType of true gives adaptive mean thresholding and false gives adaptive Gaussian thresholding
+	blockSize sets the size of the neighborhood, and subtract reduces the threshold by the given amount
+	'''
+	if thresholdType:
+		thresh = cv2.ADAPTIVE_THRESH_MEAN_C
+	else:
+		thresh = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+
+	proc = cv2.adaptiveThreshold(image, 255, thresh, \
+		cv2.THRESH_BINARY, blockSize, subtract)
+	
+	drawShapes(proc, img)
 
 def multiThresholding(image, kthresh, kthcenter = 0, plotHistogram = False):
 

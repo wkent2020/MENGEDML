@@ -3,6 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
+	"Crop pixels off the image"
+	cropped_image = np.copy(image)
+	cropped_image = cropped_image[cropTop:,cropLeft:]
+	if cropBottom:
+		cropped_image = cropped_image[:-cropBottom,]
+	if cropRight:
+		cropped_image = cropped_image[:,-cropRight]
+	return cropped_image
+
 def windowFrame(image, rows, columns, save = True, file='none'):
 	frames = []
 	lenRows, lenColumns = image.shape
@@ -267,6 +277,22 @@ def sobely(img, plot = False):
 		plt.subplot(2,2,2),plt.imshow(sobely,cmap = 'gray')
 		plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
 	return sobely
+
+def adaptiveThresholding(image, thresholdType = 1, blockSize = 11, subtract = 2):
+	'''
+	Applies adaptive thresholding to image with either mean or Gaussian thresholding
+	thresholdType of true gives adaptive mean thresholding and false gives adaptive Gaussian thresholding
+	blockSize sets the size of the neighborhood, and subtract reduces the threshold by the given amount
+	'''
+	if thresholdType:
+		thresh = cv2.ADAPTIVE_THRESH_MEAN_C
+	else:
+		thresh = cv2.ADAPTIVE_THRESH_GAUSSIAN_C
+
+	proc = cv2.adaptiveThreshold(image, 255, thresh, \
+		cv2.THRESH_BINARY, blockSize, subtract)
+
+	return proc
 
 def drawShapes(image_binarized, image):
 	'''
