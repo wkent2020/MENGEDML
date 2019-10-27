@@ -11,17 +11,30 @@ def contourBoundary(contour):
 	x,y,w,h = cv2.boundingRect(contour)
 	return np.array([y,y+h,x,x+w])
 
+def fillPoly(contour, image):
+	#Returns filled polygon with intensity 0 on white array of same size as original image
+
+	canvas = np.zeros(image.shape).astype(image.dtype) + 255
+	fill = cv2.fillPoly(canvas, pts =[contour], color=0)
+	return fill
+	
+def contourArea(contour, image):
+	'''
+	Compute contour area by counting the number of filled pixels in fillPoly
+	Doesn't equal the output of openCV native contourArea function
+	'''
+
+	fill = fillPoly(contour, image)
+	return np.sum(np.logical_not(fill).astype('uint8'))
+
 def cropContour(contour, image, border = 0):
 	'''
 	Crop shape from rest of image
 	'''
 
 	boundary = contourBoundary(contour) 
-	# create a single channel pixel white image
-	canvas = np.zeros(image.shape).astype(image.dtype) + 255
-	fill = cv2.fillPoly(canvas, pts =[contour], color=0)
 	#keep shape in grayscale, turn background white
-	anti_fill = cv2.bitwise_or(image,fill)
+	anti_fill = cv2.bitwise_or(image,fillPoly(contour, image))
 	croppedContour = anti_fill[boundary[0]:boundary[1],\
 					boundary[2]:boundary[3]]
 	#also crop to slightly larger than boundary so shape isn't right at 

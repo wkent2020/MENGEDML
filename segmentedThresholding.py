@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from thresholdingFunctions import *
+from contourFunctions import *
 
 direct = 'Normalized_BackgroundRemoved/'
 file = "121.tif"
