@@ -155,6 +155,8 @@ def windowFrame3(image, rows, columns, factor, save = True, file='none'):
 #	print("The number of frames is %i" % len(frames))
 	return frames
 
+
+
 def histogram(image, show = True, save = ''):
 	Z = np.concatenate(np.float32(image.reshape((-1,1))))
 	img_max = image.max()
