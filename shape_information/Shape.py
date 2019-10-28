@@ -84,7 +84,7 @@ class Shape(object):
         self.flat = np.ndarray.flatten(self.padded)
 
     def shapeIntensity(self):
-    	self.shapePixels  = list(filter(lambda x: x != 255, self.cropped))
+    	self.shapePixels  = list(filter(lambda x: x != 255, self.cropped.flatten()))
     	self.area = len(self.shapePixels)
     	self.meanDensity = np.sum(self.shapePixels) / self.area
 
