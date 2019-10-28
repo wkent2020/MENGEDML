@@ -54,7 +54,7 @@ class Shape(object):
         Crop shape from rest of image
         '''
         #approximate shape of contour
-        approx = cv2.approxPolyDP(self.contour, 0.02 * self.peri, True)
+        approx = cv2.approxPolyDP(self.contour, 0.02 * self.perimeter, True)
         # create a single channel pixel white image
         canvas = np.zeros(parent.shape).astype(parent.dtype) + 255
         fill = cv2.fillPoly(canvas, pts =[self.contour], color=0)
@@ -84,7 +84,7 @@ class Shape(object):
         self.flat = np.ndarray.flatten(self.padded)
 
     def shapeIntensity(self):
-    	self.shapePixels  = list(filter(lambda x: x != 255, self.cropped))
+    	self.shapePixels  = list(filter(lambda x: x != 255, self.cropped.flatten()))
     	self.area = len(self.shapePixels)
     	self.meanDensity = np.sum(self.shapePixels) / self.area
 
