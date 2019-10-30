@@ -17,7 +17,7 @@ class Shape(object):
     self.bordered (cropped image padded with 2 pixels of white space on borders)
     self.meanDensity (average greyscale value of pixels in contour)
     self.shapePixels (list of greyscale pixel values of the contour shape (white backgound removed))
-    self.centroid (center of mass expressed relative to the upper right of the contour)
+    self.centroid (center of mass expressed in image coordinates)
 
     '''
     def __init__(self, contour, image):
@@ -99,7 +99,9 @@ class Shape(object):
         mass = np.sum(inverseFloat) 
         grids = np.ogrid[[slice(0,i) for i in inverseFloat.shape]]
         #Take weighted average of the mass
-        self.centroid = [np.sum(inverseFloat * grids[dim].astype(float)) / mass 
+        #Outputes center of mass relative to the coordinates of the contour
+        centroid = [np.sum(inverseFloat * grids[dim].astype(float)) / mass 
                         for dim in range(inverseFloat.ndim)]
-        #Might be worthwhile to normalize the center of mass coordinates
+        #Convert to image coordinates
+        self.centroid = [centroid[0]+self.boundary[0], centroid[1]+self.boundary[2]]
         
