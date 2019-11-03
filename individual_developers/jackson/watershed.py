@@ -25,15 +25,6 @@ def watershed(image, kernelSize=5):
     # since they are often different than threshold
     closingEdge = cv2.morphologyEx(edges,cv2.MORPH_CLOSE,kernel)
 
-    '''
-    #print debugging
-    fig, axes = plt.subplots(1, 2)
-    axes[0].set_title("Threshold")
-    axes[0].imshow(closingThresh,cmap='gray')
-    axes[1].set_title("Edges")
-    axes[1].imshow(closingEdge,cmap='gray')
-    plt.show()
-    '''
 
     #Combine the two closings
     closing = np.logical_or(closingEdge,closingThresh).astype('uint8')*255
@@ -45,6 +36,13 @@ def watershed(image, kernelSize=5):
     unknown = cv2.subtract(sure_bg,sure_fg)
 
     '''
+    #print debugging
+    fig, axes = plt.subplots(1, 2)
+    axes[0].set_title("Foreground")
+    axes[0].imshow(sure_fg,cmap='gray')
+    axes[1].set_title("Background")
+    axes[1].imshow(sure_bg,cmap='gray')
+    plt.show()
     #Print debugging
     plt.close()
     plt.imshow(unknown,cmap='gray')
