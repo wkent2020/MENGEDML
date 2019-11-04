@@ -184,4 +184,4 @@ def drawShapes(image_binarized, image):
 	#change back to RGB for easier visualization
 	shapes_image = cv2.cvtColor(shapes_image, cv2.COLOR_GRAY2RGB)
 	shapes_image = cv2.drawContours(shapes_image, contours, -1, (255,0,0), 1)
-	return shapes_image
+	return shapes_image, contours
