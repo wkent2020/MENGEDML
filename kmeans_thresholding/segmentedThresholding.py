@@ -43,7 +43,7 @@ def multiThresholding(image, kthresh, pixelThresh = False):
 
 	frame_contours = []	
 
-	contourImage = drawShapes(proc, image)
+	contourImage, contours = drawShapes(proc, image)
 	return proc, contourImage
 
 """
