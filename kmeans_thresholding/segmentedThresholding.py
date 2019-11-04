@@ -89,10 +89,10 @@ def segmentedThresholding(img, rows, columns, kthresh, file, filter = None, save
 	reconstructedImage = reconstructImage(frames_contours, uni, columns, rows)
 
 	# Draws contours onto image
-	allContours = drawShapes(reconstructedImage, img)
+	contouredImage, allContours = drawShapes(reconstructedImage, img)
 	
 	# Returs contoured image and array of contours
-	return reconstructedImage, allContours
+	return reconstructedImage, contouredImage, allContours
 
 
 
