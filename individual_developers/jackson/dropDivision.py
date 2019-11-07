@@ -99,11 +99,12 @@ def bigDropDivision(croppedContour, buffer = 1):
 
 	
 	plt.close()
-	fig, axes = plt.subplots(1, 2)
+	fig, axes = plt.subplots(2, 1)
 	axes[0].set_title("Contour")
 	axes[0].imshow(contour,cmap='gray')
 	axes[1].set_title("Markers")
 	axes[1].imshow(markers,cmap='gray')
+	plt.tight_layout()
 	plt.show()
 	
 
@@ -170,6 +171,10 @@ def descriptiveStatistics():
 			print(image[r1:r2, c1:c2])
 			bigDropDivision(shapeCrop)
 
+	plt.close()
+	plt.title("Shape Characteristics")
+	plt.xlabel("Average Intensity")
+	plt.ylabel("Area")
 	plt.scatter(shapesDensity, shapesArea)
 	plt.show()
 	plt.hist(shapesArea, density=False, bins=30)
