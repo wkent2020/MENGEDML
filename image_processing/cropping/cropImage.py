@@ -14,5 +14,5 @@ def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
 	if cropBottom:
 		cropped_image = cropped_image[:-cropBottom,]
 	if cropRight:
-		cropped_image = cropped_image[:,-cropRight]
+		cropped_image = cropped_image[:,0:-cropRight]
 	return cropped_image
