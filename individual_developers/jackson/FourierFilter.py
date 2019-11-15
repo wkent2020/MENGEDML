@@ -4,14 +4,19 @@ import matplotlib.pyplot as plt
 from scipy import fftpack
 
 img = cv2.imread("individual_developers/jackson/120.tif",-1)
-#img = cv2.imread("individual_developers/jackson/jmi_1010_f3b.tiff",-1)
+#Material parameters to be determined later
+mu = 2*10**(3)
+zDelta = 3.1*10**(-5) * 250*10**(3)
+alpha = mu/zDelta
 
-#img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype('uint32')
-
+'''
+img = cv2.imread("individual_developers/jackson/jmi_1010_f3b.tiff",-1)
+img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype('uint32')
 #Material parameters to be determined later
 mu = 0.11322 *10**(-2)
 zDelta = -0.375 *250
 alpha = zDelta/mu
+'''
 
 #Fourier frequency coordinates
 ky = fftpack.fftfreq(len(img))
@@ -34,6 +39,7 @@ axes[0].set_title("Original")
 axes[0].imshow(img,cmap='gray')
 axes[1].set_title("Thickness")
 axes[1].imshow(thickness,cmap='gray')
+axes[1].set_xlabel("alpha =" + str(alpha))
 plt.tight_layout()
 plt.show()
 
