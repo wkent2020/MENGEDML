@@ -41,11 +41,15 @@ def iterativeThresholding(image, fileName, rowsList, columnsList, kthreshList, f
 			factor = factorList[i],\
 			excludePixels = 250)
 
+		#Save the initial binary image for watershed seeds
+		if not(i):
+			seeds = binaryImage
+
 		image[binaryImage == 0] = 250
 
 	binaryImage[image == 250] = 0
 	contourImage, contours = drawShapes(binaryImage, original_image)
-	return binaryImage, contourImage, contours
+	return original_image, binaryImage, contourImage, contours, seeds
 
 
 
@@ -60,7 +64,7 @@ img_min = img.min()
 img_rescaled = 255*((img-img_min)/(img_max-img_min))
 img = np.array(img_rescaled, dtype = np.uint8)
 
-binaryImage, contourImage, contours = iterativeThresholding(img,\
+originalImage, binaryImage, contourImage, contours, seeds = iterativeThresholding(img,\
 	'120.tif',\
 	[1,1,1],\
 	[1,1,1],\
@@ -70,6 +74,9 @@ binaryImage, contourImage, contours = iterativeThresholding(img,\
 	[True, True, True],\
 	[1, 1, 1],\
 	save = False)
+for contour in contours:
+	shape = Shape(contour, originalImage)
+	shape.dropDivide(seeds)
 plt.imshow(contourImage, cmap = 'gray')
 plt.show()
 """

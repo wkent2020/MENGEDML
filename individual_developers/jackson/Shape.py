@@ -116,6 +116,19 @@ class Shape(object):
         peaks = seeds[self.boundary[0]:self.boundary[1],\
                       self.boundary[2]:self.boundary[3]]
         croppedPeaks = cv2.bitwise_or(peaks,self.cropped)
+        if croppedPeaks.min() == 255:
+            self.invert = True
+        else:
+            self.invert = False
+        if self.area > 50:
+            fig, axes = plt.subplots(1, 2)
+            axes[0].set_title("Cropped")
+            axes[0].imshow(self.cropped,cmap='gray')
+            axes[1].set_title("Peaks")
+            axes[1].imshow(croppedPeaks,cmap='gray')
+            plt.tight_layout()
+            plt.show()
+            plt.close()
         #Invert the binary image
         _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
 
@@ -145,13 +158,21 @@ class Shape(object):
         self.split = np.copy(self.cropped)
         self.split[self.markers == -1] = 255
 
+        fig, axes = plt.subplots(1, 2)
+        axes[0].set_title("Split")
+        axes[0].imshow(self.split,cmap='gray')
+        axes[1].set_title("Markers")
+        axes[1].imshow(self.markers,cmap='gray')
+        plt.tight_layout()
+        plt.show()
+        plt.close()
+
         self.children = []
         canvas = np.zeros(self.cropped.shape).astype('uint16')+2
         # For each marker, contour into a new shape
         for marker in range(self.markers.max()-1):
             binary = np.equal(self.markers, canvas).astype('uint8')*255
             contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            #Save the contours in a list of children
             for contour in contours:
                 self.children.append(Shape(contour, self.cropped))
             canvas += 1
@@ -161,7 +182,14 @@ class Shape(object):
         Single function call to divide drops using watershed based on argument seeds
         '''        
         self.pullSeeds(seeds)
-        #Check for multiple connected components
         if self.markers.max() > 2:
             self.watershed()
             self.divideShapes()
+            fig, axes = plt.subplots(1, 2)
+            axes[0].set_title("Contour")
+            axes[0].imshow(self.cropped,cmap='gray')
+            axes[1].set_title("Markers")
+            axes[1].imshow(self.markers,cmap='gray')
+            plt.tight_layout()
+            plt.show()
+            plt.close()
