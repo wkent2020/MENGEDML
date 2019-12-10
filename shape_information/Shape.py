@@ -106,15 +106,17 @@ class Shape(object):
         #Convert to image coordinates
         self.centroid = [centroid[0]+self.boundary[0], centroid[1]+self.boundary[2]]
     
-    def pullSeeds(self, seeds):
+    def pullSeeds(self, seeds = None):
         '''
         Take a binary image of seeds and define markers as input for the watershed method
         Argument 'seeds' should be the binary image over the entire image taken by thresholding
         '''
         
-        #Crop the image
-        self.peaks = seeds[self.boundary[0]:self.boundary[1],\
-                      self.boundary[2]:self.boundary[3]]
+        #After seeds are passed, this method will reconstruct the original markers
+        if seeds is not None:
+            #Crop the image
+            self.peaks = seeds[self.boundary[0]:self.boundary[1],\
+                        self.boundary[2]:self.boundary[3]]
         croppedPeaks = cv2.bitwise_or(self.peaks,self.cropped)
         #Invert the binary image
         _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
@@ -122,7 +124,7 @@ class Shape(object):
         _, self.markers = cv2.connectedComponents(self.seeds)
         #Find connected components
         self.markers += 1
-
+        
     def pullSeeds(self):
         '''
         Overloaded pullSeeds to recover original markers if necessary
@@ -179,7 +181,7 @@ class Shape(object):
                 self.children.append(child)
             canvas += 1
 
-    def criteria(self, child):
+    def childCriteria(self, child):
         '''
         Set some criteria for a bad shape
         '''
@@ -189,7 +191,7 @@ class Shape(object):
         else:
             return False
 
-    def splitRefine(self, peaks = None):
+    def splitRefine(self, peaks = None, recursive = False):
         '''
         Recursively refine the split using the criteria function to remove small droplets
         
@@ -198,16 +200,16 @@ class Shape(object):
         that information can be recovered using the overloaded pullSeeds
         '''
         if peaks is None:
-            peaks = self.peaks
+            peaks = np.copy(self.peaks)
         modify = 0
         for child in self.children:
-            if criteria(child):
+            if self.childCriteria(child):
                 croppedPeaks = cv2.bitwise_or(peaks,child.paddedChild)
                 _, seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV)
-                peaks = cv2.bitwise_or(peaks, cv2.bitwise_not(seeds)) 
+                peaks = cv2.bitwise_or(peaks, seeds) 
                 modify = 1
         if modify:
-            croppedPeaks = cv2.bitwise_or(self.peaks,self.cropped)
+            croppedPeaks = cv2.bitwise_or(peaks,self.cropped)
             #Invert the binary image
             _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
 
@@ -216,7 +218,8 @@ class Shape(object):
             self.markers += 1
             self.watershed()
             self.divideShapes()
-            self.splitRefine(peaks=peaks)
+            if recursive:
+                self.splitRefine(peaks=peaks)
 
 
     def dropDivide(self, seeds):
