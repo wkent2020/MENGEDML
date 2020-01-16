@@ -1,0 +1,5 @@
+Example shape areas: 109, 126, 491
+
+Shape with area of 53, h=7, w=16 as example of inverted shape; method of detection
+Shape with area of 57, h=8, w=14
+

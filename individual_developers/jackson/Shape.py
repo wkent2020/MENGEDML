@@ -106,18 +106,29 @@ class Shape(object):
         #Convert to image coordinates
         self.centroid = [centroid[0]+self.boundary[0], centroid[1]+self.boundary[2]]
     
-    def pullSeeds(self, seeds = None):
+    def pullSeeds(self, seeds):
         '''
         Take a binary image of seeds and define markers as input for the watershed method
         Argument 'seeds' should be the binary image over the entire image taken by thresholding
         '''
         
-        #After seeds are passed, this method will reconstruct the original markers
-        if seeds is not None:
-            #Crop the image
-            self.peaks = seeds[self.boundary[0]:self.boundary[1],\
-                        self.boundary[2]:self.boundary[3]]
-        croppedPeaks = cv2.bitwise_or(self.peaks,self.cropped)
+        #Crop the image
+        peaks = seeds[self.boundary[0]:self.boundary[1],\
+                      self.boundary[2]:self.boundary[3]]
+        croppedPeaks = cv2.bitwise_or(peaks,self.cropped)
+        if croppedPeaks.min() == 255:
+            self.invert = True
+        else:
+            self.invert = False
+        if self.area > 50:
+            fig, axes = plt.subplots(1, 2)
+            axes[0].set_title("Cropped")
+            axes[0].imshow(self.cropped,cmap='gray')
+            axes[1].set_title("Peaks")
+            axes[1].imshow(croppedPeaks,cmap='gray')
+            plt.tight_layout()
+            plt.show()
+            plt.close()
         #Invert the binary image
         _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
 
@@ -139,15 +150,6 @@ class Shape(object):
         #Watershed
         self.markers = cv2.watershed(color,self.markers)
 
-    def childPad(self):
-        '''
-        Pad the child shape to allow for easier comparisons
-        '''
-        maxSideY = self.image.shape[0] - self.boundary[1] 
-        maxSideX = self.image.shape[1] - self.boundary[3]
-        self.paddedChild = np.pad(self.cropped,((self.boundary[0], maxSideY), \
-                      (self.boundary[2], maxSideX)), 'constant', constant_values=255)
-
     def divideShapes(self):
         '''
         Divide the shape into children after application of watershed
@@ -156,67 +158,38 @@ class Shape(object):
         self.split = np.copy(self.cropped)
         self.split[self.markers == -1] = 255
 
+        fig, axes = plt.subplots(1, 2)
+        axes[0].set_title("Split")
+        axes[0].imshow(self.split,cmap='gray')
+        axes[1].set_title("Markers")
+        axes[1].imshow(self.markers,cmap='gray')
+        plt.tight_layout()
+        plt.show()
+        plt.close()
+
         self.children = []
         canvas = np.zeros(self.cropped.shape).astype('uint16')+2
         # For each marker, contour into a new shape
         for marker in range(self.markers.max()-1):
             binary = np.equal(self.markers, canvas).astype('uint8')*255
             contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            #Save the contours in a list of children
             for contour in contours:
-                child = Shape(contour, self.cropped)
-                child.childPad()
-                self.children.append(child)
+                self.children.append(Shape(contour, self.cropped))
             canvas += 1
-
-    def childCriteria(self, child):
-        '''
-        Set some criteria for a bad shape
-        '''
-        minSize = 5
-        if minSize > child.area:
-            return True
-        else:
-            return False
-
-    def splitRefine(self, peaks = None, recursive = False):
-        '''
-        Recursively refine the split using the criteria function to remove small droplets
-        
-        Can modify this function and criteria to screen the watershed differently
-        As written, overwrites original watershed info, but 
-        that information can be recovered using the overloaded pullSeeds
-        '''
-        if peaks is None:
-            peaks = np.copy(self.peaks)
-        modify = 0
-        for child in self.children:
-            if self.childCriteria(child):
-                croppedPeaks = cv2.bitwise_or(peaks,child.paddedChild)
-                _, seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV)
-                peaks = cv2.bitwise_or(peaks, seeds) 
-                modify = 1
-        if modify:
-            croppedPeaks = cv2.bitwise_or(peaks,self.cropped)
-            #Invert the binary image
-            _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
-
-            _, self.markers = cv2.connectedComponents(self.seeds)
-            #Find connected components
-            self.markers += 1
-            self.watershed()
-            self.divideShapes()
-            if recursive:
-                self.splitRefine(peaks=peaks)
-
 
     def dropDivide(self, seeds):
         '''
         Single function call to divide drops using watershed based on argument seeds
         '''        
         self.pullSeeds(seeds)
-        #Check for multiple connected components
         if self.markers.max() > 2:
             self.watershed()
             self.divideShapes()
-            #self.splitRefine()
+            fig, axes = plt.subplots(1, 2)
+            axes[0].set_title("Contour")
+            axes[0].imshow(self.cropped,cmap='gray')
+            axes[1].set_title("Markers")
+            axes[1].imshow(self.markers,cmap='gray')
+            plt.tight_layout()
+            plt.show()
+            plt.close()

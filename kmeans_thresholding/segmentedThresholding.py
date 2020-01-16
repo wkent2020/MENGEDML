@@ -19,9 +19,12 @@ Arguments:
 	pixelThresh: If True, thresholds based on the average greyscale value of the two darkest k-means. If False, thresholds by condidering the pixels assigned to the darkest k-means cluster.
 Returns binary image, contoured image
 """
-def multiThresholding(image, kthresh, pixelThresh = False):
+def multiThresholding(image, kthresh, pixelThresh = False, excludePixels = None):
 	Z = image.reshape((-1,1))
 	Z = np.float32(Z)
+	#excludesPixels from k-means thresholding 
+	if excludePixels != None:
+		Z[Z == excludePixels] = 255
 	criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0) #directly copied from opencv documentation
 	ret,label,center=cv2.kmeans(Z,kthresh,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS) #sum of squared errors, labels, greyscale centers
 
@@ -41,6 +44,7 @@ def multiThresholding(image, kthresh, pixelThresh = False):
 		thresh_val = sortedCenters[0]
 		ret, proc = cv2.threshold(kthreshed,thresh_val,255,cv2.THRESH_BINARY) #greyscale threshold, binary image
 
+	print(thresh_val)
 	frame_contours = []	
 
 	contourImage, contours = drawShapes(proc, image)
@@ -58,9 +62,10 @@ Arguments:
 	pixelThresh: If True, thresholds based on the average greyscale value of the two darkest k-means. If False, thresholds by condidering the pixels assigned to the darkest k-means cluster.
 	Uniform segmenting boolean
 	Dimensional factor (for non-uniform segmentation)
+	Pixel values to be excluded in the thresholding algorithm (for iterative thresholding)
 Returns binary image, image with contours
 """
-def segmentedThresholding(img, rows, columns, kthresh, file, filter = None, save = False, pixelThresh = False, uni = True, factor = 1):
+def segmentedThresholding(img, rows, columns, kthresh, file, filter = None, save = False, pixelThresh = False, uni = True, factor = 1, excludePixels = None):
 
 	
 	# Selects the proper segmentation method and segments image into frames
@@ -76,7 +81,7 @@ def segmentedThresholding(img, rows, columns, kthresh, file, filter = None, save
 		if filter != None:
 			for fil in filter:
 				filteredFrame = fil(filteredFrame)
-		frame_shapes, contourImage = multiThresholding(filteredFrame, kthresh, pixelThresh = pixelThresh)
+		frame_shapes, contourImage = multiThresholding(filteredFrame, kthresh, pixelThresh = pixelThresh, excludePixels = excludePixels)
 		frames_contours.append(frame_shapes)
 	
 	# Saves contoured frames (if selected)
@@ -89,10 +94,9 @@ def segmentedThresholding(img, rows, columns, kthresh, file, filter = None, save
 	reconstructedImage = reconstructImage(frames_contours, uni, columns, rows)
 
 	# Draws contours onto image
-	contouredImage, allContours = drawShapes(reconstructedImage, img)
-	
+	contourImage, allContours = drawShapes(reconstructedImage, img)
 	# Returs contoured image and array of contours
-	return reconstructedImage, contouredImage, allContours
+	return reconstructedImage, contourImage, allContours
 
 
 
