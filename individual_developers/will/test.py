@@ -126,7 +126,7 @@ def contours_to_points(contours, img, regpoints, method='simple', data='centers'
 		if data == 'black':
 			limstart = 20
 		else:
-			limstart = 2
+			limstart = 3
 		for i in range(regpoints):
 			freq, x = np.histogram(separated_contours[i], bins=50)
 			lim = limstart
@@ -169,8 +169,8 @@ def contours_to_points(contours, img, regpoints, method='simple', data='centers'
 		plt.subplot(2,2,1)
 		plt.scatter(contx,conty, color='blue',s=0.1)
 		plt.scatter(right,intermid, color='red')
-		plt.scatter(left,intermid, color='red')
-		plt.plot(linex,leftline,'r--')
+		plt.scatter(left,intermid, color='black')
+		plt.plot(linex,leftline,'k--')
 		plt.plot(linex,rightline,'r--')
 		pyplot.axis([0, width, 0, top])
 		pyplot.gca().set_aspect('equal', adjustable='box')
@@ -179,8 +179,8 @@ def contours_to_points(contours, img, regpoints, method='simple', data='centers'
 		plt.subplot(2,2,2)
 		plt.imshow(img,cmap='gray')
 		plt.scatter(right,intermid, color='red')
-		plt.scatter(left,intermid, color='red')
-		plt.plot(linex,leftline,'r--')
+		plt.scatter(left,intermid, color='black')
+		plt.plot(linex,leftline,'k--')
 		plt.plot(linex,rightline,'r--')
 		plt.ylim(0,top)
 		plt.xlim(0,width)
@@ -194,7 +194,7 @@ def contours_to_points(contours, img, regpoints, method='simple', data='centers'
 
 
 direct = '../../test_images/'
-file = "120.tif"
+file = "128.tif"
 img = cv2.imread(direct + file,-1)
 img = cropImage(img,cropTop=100, cropBottom = 0, cropLeft = 0, cropRight =0)
 img_max = img.max()
@@ -212,12 +212,12 @@ binaryImage, contourImage, contours = segmentedThresholding(img_rescaled, 1, col
 
 
 
-plt.close('all')
-plt.figure(num=None, figsize=(7, 7), dpi=100, facecolor='w', edgecolor='k')
-plt.subplot(1,1,1)
-plt.imshow(contourImage)
+#plt.close('all')
+#plt.figure(num=None, figsize=(7, 7), dpi=100, facecolor='w', edgecolor='k')
+#plt.subplot(1,1,1)
+#plt.imshow(contourImage)
 
 
-#contours_to_points(contours, binaryImage, 6, method='hist', data='black', plot=True, save=False)
+contours_to_points(contours, binaryImage, 6, method='hist', data='black', plot=True, save=False)
 
 
