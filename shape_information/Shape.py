@@ -125,18 +125,6 @@ class Shape(object):
         #Find connected components
         self.markers += 1
         
-    def pullSeeds(self):
-        '''
-        Overloaded pullSeeds to recover original markers if necessary
-        '''
-        croppedPeaks = cv2.bitwise_or(self.peaks,self.cropped)
-        #Invert the binary image
-        _, self.seeds = cv2.threshold(croppedPeaks,254,255,cv2.THRESH_BINARY_INV) 
-
-        _, self.markers = cv2.connectedComponents(self.seeds)
-        #Find connected components
-        self.markers += 1
-        
     def watershed(self):
         '''
         Divide the shapes via watershed after processing with pullSeeds

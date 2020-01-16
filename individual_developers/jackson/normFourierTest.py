@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from scipy import fftpack
+import matplotlib.pyplot as plt 
 
 def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
 	"Crop pixels off the image"
@@ -44,14 +45,17 @@ def normalize():
     location = 'Old_Groups_Code/Honda/80bar/T2-X=0.00_Y=1.00__'
     start = 1
     stop = 399
-    output = 'individual_developers/jackson/normalizedImages/8Bit/'
+    output = 'individual_developers/jackson/norm_Img/16BitFourierSamples/'
     cropTop = 100
     background_frames = 6
     removeBackground = 1
     backgroundSection = [0,100,412,512]
     floatBoolean = 0
     fourier = 1
-    alpha = 2*10**(3) / (3.1*10**(-5) * 250*10**(3))
+    energies = [7000,8096.56,10071.7246,30000]
+    alphas = [(1.08475576*10**(-5))*(250*10**(-3)) / (808.572*10**(-6)), (8.10269285*10**(-6))*(250*10**(-3)) / (1265.81*10**(-6)), (5.2321966*10**(-6))*(250*10**(-3)) / (2445.54*10**(-6)), (5.8842113*10**(-7))*(250*10**(-3)) / (18975*10**(-6))]
+    energy = energies[3]
+    alpha = alphas[3] 
 
     '''
     with open('input.json') as f:
@@ -113,7 +117,7 @@ def normalize():
             num = "0"+str(n)
         
         img = cv2.imread(location+num+".tif",-1)
-        
+
         img = cropImage(img,cropTop=cropTop)
         
         if fourier:
@@ -152,7 +156,7 @@ def normalize():
 
         #write images -- this will automatically convert all values to uint8
         for i in range(len(imgs_rescaled)):
-            cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])
+            cv2.imwrite(output+str(int(energy))+str(120)+".tif",imgs_rescaled[120])
     else:
         #Convert back to 16-bit after the background removal
         #Does nothing if the background is not removed
@@ -161,6 +165,15 @@ def normalize():
             imgs_rescaled.append(img_rescaled.astype('uint16'))
 
         for i in range(len(imgs_rescaled)):
-            cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])
+            cv2.imwrite(output+str(int(energy))+str(120)+".tif",imgs_rescaled[120])
+        
+
+    plt.close()
+    fig, axes = plt.subplots(1, 1)
+    axes.set_title("Thickness at energy " + str(int(energy)) + " eV")
+    axes.imshow(imgs_rescaled[120],cmap='gray')
+    axes.set_xlabel("alpha = " + str(round(alpha,6)))
+    plt.tight_layout()
+    plt.show()
 
 normalize()
