@@ -1,9 +1,13 @@
 from django.http import HttpResponse
 from spray.models import Frame
 from django.shortcuts import render
+import sys
+from .Run import *
 # Create your views here.
 
 def index(request):
+
+	getImages()
 
 	# array = run()
 
