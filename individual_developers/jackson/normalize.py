@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from scipy import fftpack
+import matplotlib.pyplot as plt
 
 def cropImage(image, cropTop=0, cropBottom = 0, cropLeft = 0, cropRight =0):
 	"Crop pixels off the image"
@@ -34,6 +35,25 @@ def fourierFilter(img, alpha):
 
     return thickness
 
+
+def meanIntensity(image):
+    Z = np.concatenate(np.float32(image.reshape((-1,1))))
+    return np.mean(Z)
+
+def histogram(image, show = True, save = ''):
+	Z = np.concatenate(np.float32(image.reshape((-1,1))))
+	img_max = image.max()
+	img_min = image.min()
+	bins = img_max - img_min
+	fig, axs = plt.subplots(1, 1)
+	axs.hist(Z, bins)
+	axs.set_xlim(15000,25000)
+	if show:
+		plt.show()
+	if len(save) != 0:
+		plt.savefig('individual_developers/jackson/norm_hist/' + save)
+		plt.close()
+
 def normalize():
     '''
     Normalize all images using one reference point
@@ -51,7 +71,7 @@ def normalize():
     backgroundSection = [0,100,412,512]
     floatBoolean = 0
     fourier = 1
-    alpha = 2*10**(3) / (3.1*10**(-5) * 250*10**(3))
+    alpha = (1.08475576*10**(-5))*(250*10**(-3)) / (808.572*10**(-6))
 
     '''
     with open('input.json') as f:
@@ -141,6 +161,7 @@ def normalize():
     #now rescale each image to 8-bit range
     #pixel values will still be stored as floats
     imgs_rescaled = []
+    img_intensities = []
 
     print("Rescaling images...")
     if floatBoolean:
@@ -161,6 +182,14 @@ def normalize():
             imgs_rescaled.append(img_rescaled.astype('uint16'))
 
         for i in range(len(imgs_rescaled)):
+            #histogram(imgs_rescaled[i],False,str(i))
+            img_intensities.append(meanIntensity(imgs_rescaled[i]).astype("32float")[0])
             cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])
+        '''
+        fig, axs = plt.subplots(1, 1)
+        axs.plot(np.arange(0,399), np.array(img_intensities))
+        plt.show()
+        print(str(np.mean(np.array(img_intensities))) + " , " + str(np.std(np.array(img_intensities))))
+        '''
 
 normalize()
