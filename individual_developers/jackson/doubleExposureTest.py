@@ -54,20 +54,7 @@ def histogram(image, show = True, save = ''):
 		plt.savefig('individual_developers/jackson/norm_hist/' + save)
 		plt.close()
 
-def doubleFourier(img):
-    '''
-    Fourier transform the double exposure images 
-    '''
-    #Perform Fourier transform
-    img_ft = fftpack.fft2(img)
-    #Divide by the fourier coordinate magnitudes
-    transformedFT = img_ft/ (1+ alpha*fourierMagnitude)
-    #Perform inverse Fourier transform
-    transformedImage = fftpack.ifft2(transformedFT).imaginary
-    #Take the log, but do not divide by -mu
-    thickness = np.log(transformedImage)
 
-    return thickness
 
 def normalize():
     '''
@@ -182,22 +169,27 @@ def normalize():
     print("Rescaling images...")
     if floatBoolean:
 
-
+        i=0
         for img in imgs_norm:
             img_rescaled = 1.0*((img-min_pixel)/(max_pixel-min_pixel))
             #imgs_rescaled.append(img_rescaled.astype('32float'))
-
-            img_ft = fftpack.fft2(img_rescaled)
-            plt.close()
-            fig, axes = plt.subplots(1, 3)
-            axes[0].set_title("Original")
-            axes[0].imshow(img_rescaled,cmap='gray')
-            axes[1].set_title("Real Part")
-            axes[1].imshow(img_ft.real,cmap='gray')
-            axes[2].set_title("Imaginary Part")
-            axes[2].imshow(img_ft.imag,cmap='gray')
-            plt.tight_layout()
-            plt.show()
+            i += 1
+            if i==3:
+                img_ft = fftpack.fft2(img_rescaled)
+                plt.close()
+                fig, axes = plt.subplots(1, 2)
+                axes[0].semilogy(np.arange(len(img_ft[500])),np.abs(img_ft[500]),label="Row 500")
+                axes[0].semilogy(np.arange(len(img_ft[501])),np.abs(img_ft[501]),label="Row 501")
+                axes[0].set_xlabel("Spatial Frequency")
+                axes[0].legend()
+                axes[0].set_title("Row Magnitude")
+                axes[1].semilogy(np.arange(len(img_ft[:,500])),np.abs(img_ft[:,500]),label="Column 500")
+                axes[1].semilogy(np.arange(len(img_ft[:,501])),np.abs(img_ft[:,501]),label="Column 501")
+                axes[1].set_title("Column Magnitude")
+                axes[1].set_xlabel("Spatial Frequency")
+                axes[1].legend()
+                plt.tight_layout()
+                plt.show()
 
         #write images -- this will automatically convert all values to uint8
         #for i in range(len(imgs_rescaled)):

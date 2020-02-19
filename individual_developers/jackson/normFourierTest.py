@@ -35,6 +35,31 @@ def fourierFilter(img, alpha):
 
     return thickness
 
+def multiWavelength(img, alphas, ratios):
+    '''
+    Apply the thickness finding Fourier algorithm using multiple alphas in ratio
+    '''
+    #Fourier frequency coordinates
+    ky = fftpack.fftfreq(len(img))
+    kx = fftpack.fftfreq(len(img[0]))
+    kx, ky = np.meshgrid(kx, ky)
+    #Compute their magnitudes
+    fourierMagnitude = np.square(kx) + np.square(ky)
+
+    #Perform Fourier transform
+    img_ft = fftpack.fft2(img)
+    #Divide by the fourier coordinate magnitudes
+    transformedFT = 0
+    for i in range(len(alphas)):
+        transformedFT += ratios[i]*img_ft/ (1+ alphas[i]*fourierMagnitude)
+    transformedFT = transformedFT/np.sum(ratios)
+    #Perform inverse Fourier transform
+    transformedImage = fftpack.ifft2(transformedFT).real
+    #Take the log, but do not divide by -mu
+    thickness = np.log(transformedImage)
+
+    return thickness
+
 def normalize():
     '''
     Normalize all images using one reference point
@@ -52,10 +77,14 @@ def normalize():
     backgroundSection = [0,100,412,512]
     floatBoolean = 0
     fourier = 1
-    energies = [7000,8096.56,10071.7246,30000]
-    alphas = [(1.08475576*10**(-5))*(250*10**(-3)) / (808.572*10**(-6)), (8.10269285*10**(-6))*(250*10**(-3)) / (1265.81*10**(-6)), (5.2321966*10**(-6))*(250*10**(-3)) / (2445.54*10**(-6)), (5.8842113*10**(-7))*(250*10**(-3)) / (18975*10**(-6))]
-    energy = energies[3]
-    alpha = alphas[3] 
+    #Combine energies (keV)
+    energies=[5995.35547, 7052.78076, 8062.25781, 10043.8574, 12043.2998]
+    ratios=[1.0, 0.9, 0.8, 0.6, 0.4]
+    #alpha=delta/beta*hc/(energy in keV)*(distance to detector)
+    alphas=(1.23984*10**(-9)*250*10**(-3))*np.array([1.48012359*10**(-5)/(5995.35547*3.28875593*10**(-8)),1.06854031*10**(-5)/(7052.78076*1.69040764*10**(-8)),8.01692113*10**(-6)/(8062.25781*9.79461845*10**(-9)),5.26131453*10**(-6)/(10043.8574*4.04986267*10**(-9)),3.65762662*10**(-6)/(12043.2998*2.0068962*10**(-9))])
+    #Test for range of energies
+    #energies = [7000,8096.56,10071.7246,30000]
+    #alphas = [(1.08475576*10**(-5))*(250*10**(-3)) / (808.572*10**(-6)), (8.10269285*10**(-6))*(250*10**(-3)) / (1265.81*10**(-6)), (5.2321966*10**(-6))*(250*10**(-3)) / (2445.54*10**(-6)), (5.8842113*10**(-7))*(250*10**(-3)) / (18975*10**(-6))]
 
     '''
     with open('input.json') as f:
@@ -91,7 +120,7 @@ def normalize():
         img = cropImage(img,cropTop=cropTop)
 
         if fourier:
-            img = fourierFilter(img, alpha)
+            img = multiWavelength(img, alphas, ratios)
 
         imgs.append(img)
 
@@ -121,7 +150,7 @@ def normalize():
         img = cropImage(img,cropTop=cropTop)
         
         if fourier:
-            img = fourierFilter(img, alpha)
+            img = multiWavelength(img, alphas, ratios)
 
         if removeBackground:
             img_nobg = img/bg
@@ -155,25 +184,28 @@ def normalize():
             imgs_rescaled.append(img_rescaled.astype('32float'))
 
         #write images -- this will automatically convert all values to uint8
-        for i in range(len(imgs_rescaled)):
-            cv2.imwrite(output+str(int(energy))+str(120)+".tif",imgs_rescaled[120])
+        #for i in range(len(imgs_rescaled)):
+        #    cv2.imwrite(output+str(int(energy))+str(120)+".tif",imgs_rescaled[120])
     else:
         #Convert back to 16-bit after the background removal
         #Does nothing if the background is not removed
         for img in imgs_norm:
             img_rescaled = (2**16)*((img-min_pixel)/(max_pixel-min_pixel))
             imgs_rescaled.append(img_rescaled.astype('uint16'))
-
-        for i in range(len(imgs_rescaled)):
-            cv2.imwrite(output+str(int(energy))+str(120)+".tif",imgs_rescaled[120])
         
 
+        #for i in range(len(imgs_rescaled)):
+        #    cv2.imwrite(output+str(i)+".tif",imgs_rescaled[i])
+        
+        
+    
     plt.close()
     fig, axes = plt.subplots(1, 1)
-    axes.set_title("Thickness at energy " + str(int(energy)) + " eV")
+    #axes.set_title("Thickness at energy " + str(int(energies)) + " eV")
     axes.imshow(imgs_rescaled[120],cmap='gray')
-    axes.set_xlabel("alpha = " + str(round(alpha,6)))
+    #axes.set_xlabel("alpha = " + str(round(alphas,6)))
     plt.tight_layout()
     plt.show()
+    
 
 normalize()
